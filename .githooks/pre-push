@@ -1,0 +1,43 @@
+#!/bin/sh
+# pre-push: тяжёлые проверки перед отправкой на сервер.
+# Пока кода нет — просто пропускаем. Появится package.json — включаемся.
+
+if [ ! -f "package.json" ]; then
+  echo "pre-push: package.json ещё нет, проверки пропущены."
+  exit 0
+fi
+
+FAIL=0
+
+# --- 1. Контракт актуален: openapi.yaml пересобран из main.tsp --
+if [ -f "contract/main.tsp" ] && [ -f "contract/openapi.yaml" ]; then
+  if grep -q 'build:contract\|tsc\b' package.json 2>/dev/null; then
+    npm run --silent build:contract > /dev/null 2>&1 || true
+    if ! git diff --quiet -- contract/openapi.yaml; then
+      echo "Ошибка: contract/openapi.yaml устарел относительно contract/main.tsp." >&2
+      echo "Перегенерируйте контракт и закоммитьте оба файла." >&2
+      FAIL=1
+    fi
+  fi
+fi
+
+# --- 2. Полный прогон тестов -----------------------------------
+if grep -q '"test"' package.json; then
+  echo "pre-push: npm test..."
+  npm test || FAIL=1
+fi
+
+# --- 3. Сборка (её же требует Playwright) ----------------------
+if grep -q '"build"' package.json; then
+  echo "pre-push: npm run build..."
+  npm run --silent build || FAIL=1
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+  echo "" >&2
+  echo "Пуш отменён: проверки не прошли. Обойти: git push --no-verify" >&2
+  exit 1
+fi
+
+echo "pre-push: все проверки прошли."
+exit 0

@@ -1,0 +1,30 @@
+#!/bin/sh
+# commit-msg: формат сообщения коммита
+# Тема: <слой>: <описание>, слой из фиксированного набора, не длиннее 72 символов.
+
+MSG_FILE="$1"
+MSG=$(head -n1 "$MSG_FILE" | tr -d '\r')
+
+PREFIXES="contract|server|web|e2e|docs|adr|fix|feat|refactor|test|chore|ci"
+
+if ! printf '%s' "$MSG" | grep -Eq "^(${PREFIXES})(\(.+\))?: .+"; then
+  echo "" >&2
+  echo "Ошибка формата сообщения коммита." >&2
+  echo "Ожидается:  <слой>: <описание>" >&2
+  echo "Слои:       contract, server, web, e2e, docs, adr," >&2
+  echo "            fix, feat, refactor, test, chore, ci" >&2
+  echo "Примеры:    server: добавить вычисление слотов" >&2
+  echo "            docs: описать сценарий С2" >&2
+  echo "Текущее:    $MSG" >&2
+  exit 1
+fi
+
+# Длина темы: не больше 72 символов (без учёта \r)
+LEN=$(printf '%s' "$MSG" | wc -c | tr -d ' ')
+if [ "$LEN" -gt 72 ]; then
+  echo "" >&2
+  echo "Тема коммита длинее 72 символов ($LEN). Сократите." >&2
+  exit 1
+fi
+
+exit 0

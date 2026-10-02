@@ -1,0 +1,55 @@
+#!/bin/sh
+# pre-commit: быстрые проверки перед созданием коммита.
+# Всё, что стоит в staged, проверяется на конфликты и секреты.
+# Когда появится package.json, сюда добавятся линт и быстрые тесты.
+
+FAIL=0
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED" ] && exit 0
+
+# --- 1. Конфликтные маркеры git -------------------------------
+for f in $STAGED; do
+  [ -f "$f" ] || continue
+  if grep -nE '^(<<<<<<< |>>>>>>> )' "$f" > /dev/null 2>&1; then
+    echo "Ошибка: в файле $f остались конфликтные маркеры (<<<<<<< / >>>>>>>)." >&2
+    FAIL=1
+  fi
+done
+
+# --- 2. Секреты в staged-файлах --------------------------------
+# Ищем по содержимому staged-версии, а не рабочей копии.
+for f in $STAGED; do
+  [ -f "$f" ] || continue
+  CONTENT=$(git show ":$f" 2>/dev/null) || continue
+  case "$f" in
+    *.env|*/.env) continue ;;   # сам .env в репозиторий не должен попадать (см. .gitignore)
+  esac
+  if printf '%s' "$CONTENT" | grep -nEi \
+      '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|password\s*=\s*["'"'"'][^"'"'"']+|api[_-]?key\s*=\s*["'"'"'][A-Za-z0-9]{16,})' \
+      > /dev/null 2>&1; then
+    echo "Ошибка: похожий на секрет в файле $f (пароль/ключ/токен)." >&2
+    echo "Секреты в репозиторий не коммитятся: вынесите в .env (он в .gitignore)." >&2
+    FAIL=1
+  fi
+done
+
+# --- 3. Когда появится код: быстрая проверка -------------------
+if [ -f "package.json" ]; then
+  # Линт только если скрипт объявлен
+  if grep -q '"lint"' package.json; then
+    npm run --silent lint || FAIL=1
+  fi
+  # Быстрые тесты только по изменённым файлам, если тесты есть
+  if grep -q '"test"' package.json && [ -d "server/tests" ]; then
+    npx vitest run --changed || FAIL=1
+  fi
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+  echo "" >&2
+  echo "Коммит отменён. Исправьте ошибки выше или обойдите: git commit --no-verify" >&2
+  exit 1
+fi
+
+exit 0

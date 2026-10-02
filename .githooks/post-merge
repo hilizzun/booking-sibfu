@@ -1,0 +1,18 @@
+#!/bin/sh
+# post-merge: синхронизация окружения после git pull / git merge.
+# Всегда exit 0: хук не должен ломать git.
+
+if [ -f "package-lock.json" ]; then
+  # Если lock-файл изменился в этом мерже — переставить зависимости
+  if ! git diff --quiet HEAD@{1} HEAD -- package-lock.json 2>/dev/null; then
+    echo "post-merge: package-lock.json изменился — npm ci..."
+    npm ci || echo "post-merge: npm ci не прошёл, запустите вручную." >&2
+  fi
+fi
+
+# Напоминание: без сида гость видит пустую страницу (см. AGENTS.md)
+if grep -q '"seed"' package.json 2>/dev/null; then
+  echo "post-merge: не забудьте npm run seed, если менялась схема или расписание."
+fi
+
+exit 0
