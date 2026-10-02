@@ -1,0 +1,30 @@
+# Зависимости
+node_modules/
+
+# Сборка
+dist/
+build/
+
+# Окружение
+.env
+.env.local
+
+# База данных SQLite
+*.db
+*.db-journal
+*.sqlite
+
+# Тесты
+coverage/
+playwright-report/
+test-results/
+
+# Редакторы и ОС
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
