@@ -19,6 +19,8 @@ export function openDatabase(file: string): Db {
   const db = new Database(file);
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
+  // Гонка двух одновременных записей: вторая ждёт, а не падает с SQLITE_BUSY.
+  db.pragma('busy_timeout = 5000');
   applySchema(db);
   return db;
 }
@@ -82,6 +84,28 @@ function applySchema(db: Db): void {
     -- транзакции, что и вставка (решение Q3 этапа сервера).
     CREATE UNIQUE INDEX IF NOT EXISTS bookings_active_start
       ON bookings (start_utc) WHERE status = 'active';
+
+    -- Второй рубеж против гонки: пересекающиеся действующие записи
+    -- отвергаются самой базой. Первый рубеж это проверка «свободно»
+    -- в транзакции; сюда доходит только то, что проверка пропустила.
+    CREATE TRIGGER IF NOT EXISTS bookings_no_active_overlap
+      BEFORE INSERT ON bookings
+      WHEN NEW.status = 'active'
+        AND EXISTS (
+          SELECT 1 FROM bookings
+          WHERE status = 'active'
+            AND NEW.start_utc < end_utc
+            AND start_utc < NEW.end_utc
+        )
+    BEGIN
+      SELECT RAISE(ABORT, 'BOOKING_OVERLAP');
+    END;
+
+    -- Кабинет: сессии входа организатора (кука session, С6).
+    CREATE TABLE IF NOT EXISTS sessions (
+      token TEXT PRIMARY KEY,
+      created_at TEXT NOT NULL
+    );
 
     CREATE INDEX IF NOT EXISTS bookings_meeting_type
       ON bookings (meeting_type_id);

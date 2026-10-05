@@ -7,8 +7,11 @@
  */
 
 import { openDatabase } from './db.js';
+import { ensureOrganizer } from './auth.js';
 
 const db = openDatabase(process.env.DB_FILE ?? 'booking.db');
+
+ensureOrganizer(db);
 
 const existing = db.prepare('SELECT COUNT(*) AS n FROM meeting_types').get() as { n: number };
 

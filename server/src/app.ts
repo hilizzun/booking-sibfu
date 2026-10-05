@@ -10,6 +10,7 @@ import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
 
 import { openDatabase, type Db } from './db.js';
+import { ensureOrganizer } from './auth.js';
 import { ApiError, describeZodError, type ErrorBody } from './errors.js';
 import { registerRoutes } from './routes/index.js';
 
@@ -29,6 +30,7 @@ export interface AppOptions {
 
 export function buildApp(options: AppOptions = {}): FastifyInstance {
   const db = openDatabase(options.dbFile ?? ':memory:');
+  ensureOrganizer(db);
   const app = Fastify({ logger: options.logger ?? false });
 
   app.decorate('db', db);
