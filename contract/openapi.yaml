@@ -1,0 +1,759 @@
+openapi: 3.1.0
+info:
+  title: Сервис бронирования
+  version: 1.0.0
+  description: Сервис бронирования слотов на созвоны и встречи.
+tags:
+  - name: meeting-types
+  - name: slots
+  - name: bookings
+  - name: admin-auth
+  - name: admin-meeting-types
+  - name: admin-bookings
+paths:
+  /admin/bookings:
+    get:
+      operationId: Bookings_list
+      description: 'Список записей: имя и почта гостя, тип встречи, время и состояние (С8). Новые сверху.'
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/BookingStatus'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-bookings
+      security:
+        - ApiKeyAuth: []
+  /admin/bookings/{id}/cancel:
+    post:
+      operationId: Bookings_cancel_2
+      description: Отмена записи организатором (С8). Слот освобождается, повторная отмена — 409 (С3).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Действие противоречит текущему состоянию данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-bookings
+      security:
+        - ApiKeyAuth: []
+  /admin/login:
+    post:
+      operationId: Auth_login
+      description: |-
+        Вход в кабинет: задаёт httpOnly-куку session (С6). Неверные логин или
+        пароль — 401 unauthorized. Восстановление пароля не предусмотрено.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            set-cookie:
+              required: true
+              schema:
+                type: string
+        '400':
+          description: Запрос не прошёл проверку данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+  /admin/logout:
+    post:
+      operationId: Auth_logout
+      description: 'Выход из кабинета: сессионная кука гасится.'
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+          headers:
+            set-cookie:
+              required: true
+              schema:
+                type: string
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-auth
+      security:
+        - ApiKeyAuth: []
+  /admin/meeting-types:
+    get:
+      operationId: MeetingTypes_list_2
+      description: Типы встреч и часы приёма организатора, в его поясе (С7).
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeetingType'
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-meeting-types
+      security:
+        - ApiKeyAuth: []
+    post:
+      operationId: MeetingTypes_create
+      description: 'Создать тип встречи: длительность сразу, часы приёма сразу или позже (С7).'
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingType'
+        '400':
+          description: Запрос не прошёл проверку данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-meeting-types
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeetingTypeCreate'
+      security:
+        - ApiKeyAuth: []
+  /admin/meeting-types/{id}:
+    patch:
+      operationId: MeetingTypes_update
+      description: Правка названия, описания, длительности или часов приёма. Существующие записи не меняются (Q12).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingType'
+        '400':
+          description: Запрос не прошёл проверку данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-meeting-types
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeetingTypeUpdate'
+      security:
+        - ApiKeyAuth: []
+    delete:
+      operationId: MeetingTypes_delete
+      description: |-
+        Удалить тип встречи. Если на тип есть записи — 409 meeting_type_in_use:
+        записи не удаляются, тип остаётся для их смысла (Q12).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '401':
+          description: Нет входа в кабинет или неверные логин и пароль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Действие противоречит текущему состоянию данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - admin-meeting-types
+      security:
+        - ApiKeyAuth: []
+  /bookings:
+    post:
+      operationId: Bookings_create
+      description: |-
+        Запись гостя на свободный слот (С1). Возвращает подтверждение с кодом
+        доступа и адресом файла календаря. Слот занят, не входит в сетку или его
+        время уже прошло — 409 slot_unavailable (С2, С12); нет такого типа — 404;
+        неверные имя или почта — 400 (С11).
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingConfirmation'
+        '400':
+          description: Запрос не прошёл проверку данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Действие противоречит текущему состоянию данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - bookings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+  /bookings/{code}:
+    get:
+      operationId: Bookings_get
+      description: 'Своя встреча по ссылке-коду: детали и состояние (С4). Чужой код не открывает встречу.'
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - bookings
+  /bookings/{code}/calendar.ics:
+    get:
+      operationId: Bookings_calendar
+      description: 'Файл календаря .ics: время указано и в поясе гостя, и в поясе организатора (С5).'
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/calendar:
+              schema:
+                contentMediaType: text/calendar
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - bookings
+  /bookings/{code}/cancel:
+    post:
+      operationId: Bookings_cancel
+      description: |-
+        Отмена встречи по ссылке-коду (С3). Повторная отмена — 409 already_cancelled.
+        Отмена не зависит от текущего времени: встречу в прошлом тоже можно отменить.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: Действие противоречит текущему состоянию данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - bookings
+  /meeting-types:
+    get:
+      operationId: MeetingTypes_list
+      description: 'Типы встреч для записи: название, длительность, пояс и часы приёма (С7, С10).'
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeetingType'
+      tags:
+        - meeting-types
+  /slots:
+    get:
+      operationId: Slots_list
+      description: |-
+        Слоты типа встречи на диапазон дат: свободные и занятые (С1).
+        Даты задаются календарными днями в поясе организатора; ширина диапазона
+        не больше 31 дня, иначе отказ (С13). Если у типа нет часов приёма,
+        возвращается пустой список, а не ошибка (С10). Нет такого типа — 404 (С16).
+      parameters:
+        - name: meeting_type_id
+          in: query
+          required: true
+          description: Идентификатор типа встречи.
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: date_from
+          in: query
+          required: true
+          description: Начало диапазона, включительно.
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: date_to
+          in: query
+          required: true
+          description: Конец диапазона, включительно.
+          schema:
+            type: string
+            format: date
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slot'
+        '400':
+          description: Запрос не прошёл проверку данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '404':
+          description: Запрошенный объект не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      tags:
+        - slots
+components:
+  schemas:
+    Booking:
+      type: object
+      required:
+        - id
+        - meeting_type_id
+        - meeting_type_name
+        - start
+        - end
+        - time_zone
+        - guest_name
+        - guest_email
+        - status
+        - created_at
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Идентификатор записи, виден организатору.
+        meeting_type_id:
+          type: integer
+          format: int32
+          description: Тип встречи.
+        meeting_type_name:
+          type: string
+          description: Название типа встречи на момент запроса, чтобы клиенту хватило одного запроса.
+        start:
+          type: string
+          format: date-time
+          description: Начало встречи в UTC.
+        end:
+          type: string
+          format: date-time
+          description: Конец встречи в UTC.
+        time_zone:
+          type: string
+          description: 'Пояс организатора в момент записи, IANA: показывается рядом с поясом гостя (С5).'
+        guest_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Имя гостя.
+        guest_email:
+          type: string
+          format: email
+          description: 'Почта гостя: контакт для организатора, доступ по ней не выдаётся.'
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+          description: Состояние записи.
+        created_at:
+          type: string
+          format: date-time
+          description: Момент создания записи в UTC.
+      description: Запись гостя на встречу.
+    BookingConfirmation:
+      type: object
+      required:
+        - booking
+        - access_code
+        - calendar_url
+      properties:
+        booking:
+          $ref: '#/components/schemas/Booking'
+          description: Сама запись.
+        access_code:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+          description: Случайный код доступа к встрече и её отмене. Срок не истекает (С4).
+        calendar_url:
+          type: string
+          description: Адрес файла календаря .ics по этому коду.
+      description: 'Подтверждение записи: выдаётся гостю сразу на экране (С1).'
+    BookingCreate:
+      type: object
+      required:
+        - meeting_type_id
+        - start
+        - guest_name
+        - guest_email
+      properties:
+        meeting_type_id:
+          type: integer
+          format: int32
+        start:
+          type: string
+          format: date-time
+          description: 'Начало слота в UTC: должен совпадать со слотом сетки и быть в будущем (С12).'
+        guest_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        guest_email:
+          type: string
+          format: email
+      description: Данные для создания записи.
+    BookingStatus:
+      type: string
+      enum:
+        - active
+        - cancelled
+      description: Состояние записи.
+    DayOfWeek:
+      type: string
+      enum:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      description: День недели в часах приёма.
+    ErrorBody:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+          description: Код ошибки для кода клиента.
+        message:
+          type: string
+          description: Сообщение на русском языке для показа пользователю.
+      description: Общее тело ответа при любой ошибке сервиса.
+    ErrorCode:
+      type: string
+      enum:
+        - validation_failed
+        - unauthorized
+        - not_found
+        - slot_unavailable
+        - already_cancelled
+        - meeting_type_in_use
+      description: Машиночитаемый код ошибки. Клиент опирается на код, человек читает message.
+    LoginRequest:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      description: Данные входа организатора в кабинет.
+    MeetingType:
+      type: object
+      required:
+        - id
+        - name
+        - duration_minutes
+        - description
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Идентификатор типа встречи.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Название, например «Консультация».
+        duration_minutes:
+          type: integer
+          format: int32
+          minimum: 5
+          maximum: 1440
+          description: Длительность одной встречи в минутах.
+        description:
+          type: string
+          maxLength: 500
+          description: Описание для гостя.
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+          description: Часы приёма. Если не заданы, слоты не строятся и гость видит пустую сетку (С10).
+      description: 'Тип встречи: то, на что записывается гость, со своими часами приёма.'
+    MeetingTypeCreate:
+      type: object
+      required:
+        - name
+        - duration_minutes
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        duration_minutes:
+          type: integer
+          format: int32
+          minimum: 5
+          maximum: 1440
+        description:
+          type: string
+          maxLength: 500
+          default: ''
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+          description: Часы приёма можно задать сразу или позже отдельной правкой (С7).
+      description: Данные для создания типа встречи.
+    MeetingTypeUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        duration_minutes:
+          type: integer
+          format: int32
+          minimum: 5
+          maximum: 1440
+        description:
+          type: string
+          maxLength: 500
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+          description: Новые часы приёма перекрывают прежние целиком и действуют на будущую сетку.
+      description: 'Правка типа встречи: меняются только переданные поля. Существующие записи правка не трогает.'
+    Schedule:
+      type: object
+      required:
+        - days_of_week
+        - start
+        - end
+        - step_minutes
+        - time_zone
+      properties:
+        days_of_week:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayOfWeek'
+          minItems: 1
+          maxItems: 7
+          description: Дни недели приёма в поясе time_zone.
+        start:
+          type: string
+          format: time
+          description: Начало рабочего окна, местное время time_zone. Должно быть раньше end.
+        end:
+          type: string
+          format: time
+          description: Конец рабочего окна, местное время time_zone.
+        step_minutes:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 720
+          description: 'Шаг сетки в минутах: расстояние между началами соседних слотов.'
+        time_zone:
+          type: string
+          pattern: ^[A-Za-z0-9_+-]+(/[A-Za-z0-9_+-]+){1,2}$
+          description: Пояс окна в формате IANA, например Europe/Moscow.
+      description: 'Часы приёма: повторяющееся правило, из которого слоты считаются на лету.'
+    Slot:
+      type: object
+      required:
+        - start
+        - end
+        - is_free
+      properties:
+        start:
+          type: string
+          format: date-time
+          description: Начало слота в UTC. Перевод в пояс зрителя делается на клиенте (С5, С15).
+        end:
+          type: string
+          format: date-time
+          description: 'Конец слота в UTC: start плюс длительность типа встречи.'
+        is_free:
+          type: boolean
+          description: Не занят ли слот действующей записью. На прошедшее время запись закрыта независимо от флага.
+      description: 'Слот сетки: начало плюс длительность типа встречи. Строится на лету, не хранится (ADR-0001).'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: cookie
+      name: session

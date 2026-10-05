@@ -1,0 +1,15 @@
+{
+  "name": "booking-sibfu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Сервис самостоятельной записи на созвоны и встречи (СФУ). Design First: сначала контракт, потом код.",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "workspaces": [
+    "contract"
+  ],
+  "scripts": {
+    "contract:build": "npm run build --workspace contract"
+  }
+}

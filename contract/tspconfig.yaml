@@ -1,0 +1,10 @@
+# Настройки компилятора TypeSpec.
+# `npm run contract:build` кладёт готовый openapi.yaml рядом с main.tsp.
+emit:
+  - "@typespec/openapi3"
+options:
+  "@typespec/openapi3":
+    emitter-output-dir: "{project-root}"
+    output-file: "openapi.yaml"
+    openapi-versions:
+      - 3.1.0
