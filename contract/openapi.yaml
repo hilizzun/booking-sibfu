@@ -611,6 +611,7 @@ components:
         - slot_unavailable
         - already_cancelled
         - meeting_type_in_use
+        - internal_error
       description: Машиночитаемый код ошибки. Клиент опирается на код, человек читает message.
     LoginRequest:
       type: object
