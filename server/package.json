@@ -1,0 +1,30 @@
+{
+  "name": "booking-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Серверная часть: Fastify 5, Zod 4, SQLite",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "seed": "tsx src/seed.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3",
+    "fastify": "5.12.3",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "22.20.1",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vite": "8.2.2",
+    "vitest": "5.0.1",
+    "yaml": "2.9.0"
+  }
+}
