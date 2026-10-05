@@ -12,7 +12,7 @@ fi
 
 # Напоминание: без сида гость видит пустую страницу (см. AGENTS.md)
 if grep -q '"seed"' package.json 2>/dev/null; then
-  echo "post-merge: не забудьте npm run seed, если менялась схема или расписание."
+  echo "post-merge: не забудьте npm run seed, если менялась схема или часы приёма."
 fi
 
 exit 0
