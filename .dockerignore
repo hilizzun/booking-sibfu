@@ -1,0 +1,12 @@
+# В образ не попадает то, что либо ставится заново, либо не нужно для запуска.
+**/node_modules
+**/dist
+**/*.db
+**/*.db-wal
+**/*.db-shm
+.git
+.github
+e2e/test-results
+e2e/playwright-report
+docs
+*.md

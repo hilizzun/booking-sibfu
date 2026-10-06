@@ -1,0 +1,26 @@
+# Поднять сервис одной командой:
+#     docker compose up -d --build
+# Интерфейс откроется по адресу http://localhost:8000
+
+services:
+  booking:
+    build: .
+    container_name: booking-sibfu
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      HOST: 0.0.0.0
+      DB_FILE: /data/booking.db
+      WEB_DIR: /app/web/dist
+      # Учётная запись организатора заводится при первом старте
+      # и обновляется при изменении переменных окружения.
+      ORGANIZER_LOGIN: ${ORGANIZER_LOGIN:-organizer}
+      ORGANIZER_PASSWORD: ${ORGANIZER_PASSWORD:-organizer}
+    volumes:
+      # Именованный том: брони не теряются при пересоздании контейнера.
+      - booking-data:/data
+    restart: unless-stopped
+
+volumes:
+  booking-data:
