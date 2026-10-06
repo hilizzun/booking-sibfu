@@ -167,11 +167,13 @@ npm run test:e2e            # Playwright, после npm run build
   не длиннее 72 символов. Типы: `feat`, `fix`, `docs`, `refactor`, `test`,
   `chore`, `ci`. Слои: `contract`, `server`, `web`, `e2e`, `docs`, `adr`.
   Проверяет хук `.githooks/commit-msg`.
-- `CHANGELOG.md` собирается из git-истории командой `sh scripts/changelog.sh`
+- `CHANGELOG.md` собирается из git-истории командой `npm run changelog`
   и руками не правится: поправка живёт в сообщении коммита. Раздел выбирается
   по типу: `feat` → Новое, `fix` → Исправления, `docs` → Документация;
   `refactor`, `test`, `chore`, `ci` в журнал не попадают. Запуск: вручную
-  перед тегом или по мере накопления.
+  перед тегом или по мере накопления. Под капотом — `scripts/changelog.sh`,
+  вызываемый через `scripts/run-changelog.js`; в Linux/macOS скрипт работает
+  и напрямую как `sh scripts/changelog.sh`.
 
 ## 8. Чего делать нельзя
 

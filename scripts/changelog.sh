@@ -1,7 +1,9 @@
 #!/bin/sh
 # changelog.sh: собирает CHANGELOG.md целиком из git-истории.
 #
-# Запуск:  sh scripts/changelog.sh
+# Запуск:  npm run changelog
+#          (внутри: sh scripts/changelog.sh — напрямую работает на Linux/macOS,
+#           npm-скрипт добавляет обёртку для Windows PowerShell)
 #
 # Структура файла: сверху «Невыпущенное» (коммиты после последнего тега),
 # ниже заголовки тегов с датой (новые сверху), у каждого блока три раздела
@@ -100,7 +102,7 @@ LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
 {
   echo "# Журнал изменений"
   echo ""
-  echo "Файл собирается из git-истории командой \`sh scripts/changelog.sh\`."
+  echo "Файл собирается из git-истории командой \`npm run changelog\`."
   echo "Раздел выбирается по типу коммита: \`feat\` → Новое, \`fix\` → Исправления,"
   echo "\`docs\` → Документация; \`refactor\`, \`test\`, \`chore\`, \`ci\` не попадают."
   echo ""
