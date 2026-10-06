@@ -18,7 +18,16 @@
     "build": "npm run build --workspace server && npm run build --workspace web",
     "seed": "npm run seed --workspace server",
     "changelog": "node scripts/run-changelog.js",
-    "test": "npm run test --workspace server"
+    "typecheck": "npm run typecheck --workspace server && npm run typecheck --workspace web",
+    "test": "npm run test --workspace server",
+    "test:e2e": "playwright test --config e2e/playwright.config.mjs",
+    "test:e2e:install": "playwright install chromium",
+    "start:server:e2e": "npm run start --workspace server",
+    "preview:web:e2e": "npm run preview:e2e --workspace web"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0"
   }
 }
-

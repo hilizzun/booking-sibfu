@@ -7,6 +7,9 @@
  */
 
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import fastifyStatic from '@fastify/static';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { ZodError } from 'zod';
 
 import { openDatabase, type Db } from './db.js';
@@ -26,6 +29,12 @@ export interface AppOptions {
   dbFile?: string;
   /** Писать ли журнал запросов. В тестах не нужен. */
   logger?: boolean;
+  /**
+   * Папка со собранным интерфейсом (например, `web/dist`). Если передана
+   * и существует на диске, сервер начнёт отдавать её как статику и
+   * делать SPA-fallback на index.html. В dev-режиме и в тестах не задаётся.
+   */
+  webDir?: string;
 }
 
 export function buildApp(options: AppOptions = {}): FastifyInstance {
@@ -104,10 +113,29 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
 
   registerRoutes(app);
 
-  app.setNotFoundHandler((_request, reply) => {
-    const body: ErrorBody = { code: 'not_found', message: 'Такого эндпоинта нет' };
-    return reply.code(404).send(body);
-  });
+  // В проде: web собирается в web/dist и сервер отдаёт его как статику.
+  // Маршруты API имеют приоритет: сначала зарегистрированные пути, потом статика.
+  // Если webDir не передан или папки нет, статика не подключается —
+  // это нормально для dev-режима и для модульных тестов.
+  const webDir = options.webDir !== undefined ? resolve(options.webDir) : undefined;
+  if (webDir !== undefined && existsSync(webDir)) {
+    app.register(fastifyStatic, { root: webDir, prefix: '/', wildcard: false });
+    // SPA-fallback: всё, что не поймали маршруты и не нашлось в статике,
+    // отдаём index.html. Без этого обновление страницы по глубокой ссылке
+    // падало бы в 404.
+    app.setNotFoundHandler((request, reply) => {
+      if (request.method !== 'GET' && request.method !== 'HEAD') {
+        const body: ErrorBody = { code: 'not_found', message: 'Такого эндпоинта нет' };
+        return reply.code(404).send(body);
+      }
+      return reply.type('text/html').sendFile('index.html');
+    });
+  } else {
+    app.setNotFoundHandler((_request, reply) => {
+      const body: ErrorBody = { code: 'not_found', message: 'Такого эндпоинта нет' };
+      return reply.code(404).send(body);
+    });
+  }
 
   app.addHook('onClose', async () => {
     db.close();
