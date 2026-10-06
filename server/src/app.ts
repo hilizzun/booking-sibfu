@@ -35,6 +35,45 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
 
   app.decorate('db', db);
 
+  // Пустое тело запроса для POST без параметров (например, отмена встречи
+  // POST /bookings/:code/cancel) — норма. По умолчанию Fastify падает на пустом
+  // JSON-теле, а POST без Content-Type отдаёт 415. Этот парсер принимает пустое
+  // тело как «параметров нет» и не требует Content-Type для пустого POST.
+  app.addContentTypeParser(
+    'application/json',
+    { parseAs: 'string' },
+    (_request, body, done) => {
+      const text = typeof body === 'string' ? body : body.toString('utf-8');
+      if (text.length === 0) {
+        done(null, undefined);
+        return;
+      }
+      try {
+        done(null, JSON.parse(text));
+      } catch (error) {
+        const parseError = error as Error & { statusCode?: number };
+        parseError.statusCode = 400;
+        done(parseError);
+      }
+    },
+  );
+  app.addContentTypeParser(
+    '*',
+    { parseAs: 'string' },
+    (_request, body, done) => {
+      const text = typeof body === 'string' ? body : body.toString('utf-8');
+      if (text.length === 0) {
+        done(null, undefined);
+        return;
+      }
+      const unsupported = new Error(
+        'Для этого Content-Type тело запроса не поддерживается',
+      ) as Error & { statusCode?: number };
+      unsupported.statusCode = 415;
+      done(unsupported);
+    },
+  );
+
   // Единая обработка ошибок: в обработчике достаточно бросить ApiError
   // или не пройти schema.parse, а превращение в ответ {code, message}
   // происходит здесь, один раз (контракт: ErrorBody).
