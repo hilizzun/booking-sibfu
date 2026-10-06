@@ -30,7 +30,6 @@ COPY package.json package-lock.json ./
 COPY contract/package.json contract/
 COPY server/package.json server/
 COPY web/package.json web/
-COPY e2e/package.json e2e/
 RUN npm ci
 
 COPY . .
