@@ -1,0 +1,393 @@
+/* Собственное оформление без библиотек компонентов. */
+
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  background: #f6f4ef;
+  color: #22201c;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: grid;
+  gap: 24px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+section {
+  background: #fff;
+  border: 1px solid #e3ddcf;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.muted {
+  color: #6f6a5e;
+  margin: 0;
+}
+
+.error {
+  color: #8f1d1d;
+  background: #fbe9e9;
+  border: 1px solid #e5b4b4;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0;
+}
+
+.picker {
+  display: grid;
+  gap: 8px;
+}
+
+.picker-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  border: 1px solid #d8d2c2;
+  background: #fbf9f4;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.picker-item.is-selected {
+  border-color: #2f6f3e;
+  background: #eef5ec;
+}
+
+.picker-name {
+  font-weight: 600;
+}
+
+.weekbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.day {
+  border: 1px solid #d8d2c2;
+  background: #fbf9f4;
+  border-radius: 8px;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+}
+
+.day.is-selected {
+  border-color: #2f6f3e;
+  background: #eef5ec;
+}
+
+.day.is-past {
+  opacity: 0.55;
+}
+
+.day-weekday {
+  font-size: 12px;
+  color: #6f6a5e;
+}
+
+.day-label {
+  font-weight: 600;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.slot {
+  border-radius: 8px;
+  border: 1px solid #d8d2c2;
+  padding: 10px 0;
+  font-size: 16px;
+  cursor: pointer;
+  background: #fbf9f4;
+}
+
+.slot.is-free:hover {
+  border-color: #2f6f3e;
+}
+
+.slot.is-selected {
+  background: #2f6f3e;
+  border-color: #2f6f3e;
+  color: #fff;
+}
+
+.slot.is-busy {
+  background: #eee9db;
+  color: #8a8474;
+  cursor: not-allowed;
+}
+
+.booking,
+.lookup {
+  display: grid;
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+
+input {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid #cfc8b4;
+  border-radius: 8px;
+}
+
+button {
+  font: inherit;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #2f6f3e;
+  background: #2f6f3e;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+button.ghost {
+  background: transparent;
+  color: #2f6f3e;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirm {
+  border-color: #2f6f3e;
+}
+
+.code {
+  font-family: ui-monospace, monospace;
+  font-size: 20px;
+  background: #f1ecdf;
+  padding: 8px 12px;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+/* Шапка со ссылкой на кабинет и кнопкой «Выйти». */
+.row.between {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ghost-link {
+  color: #2f6f3e;
+  text-decoration: none;
+  border: 1px solid #2f6f3e;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.ghost-link:hover {
+  background: #eef5ec;
+}
+
+/* Вход и формы кабинета. */
+.login,
+.editor {
+  display: grid;
+  gap: 12px;
+}
+
+textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid #cfc8b4;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+fieldset.schedule {
+  border: 1px solid #cfc8b4;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+fieldset.schedule legend {
+  padding: 0 4px;
+}
+
+label.checkbox {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+label.consent {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+label.consent input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.weekday-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.day-toggle {
+  padding: 6px 10px;
+  font-size: 14px;
+  background: #fbf9f4;
+  color: #2f6f3e;
+  border: 1px solid #d8d2c2;
+}
+
+.day-toggle.is-on {
+  background: #2f6f3e;
+  color: #fff;
+  border-color: #2f6f3e;
+}
+
+.time-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+button.danger {
+  background: #8f1d1d;
+  border-color: #8f1d1d;
+}
+
+button.danger:hover {
+  background: #6f1414;
+  border-color: #6f1414;
+}
+
+button.danger.small {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+/* Список типов встреч. */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #d8d2c2;
+  background: #fbf9f4;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.list-item p {
+  margin: 4px 0 0;
+}
+
+.small {
+  font-size: 13px;
+}
+
+/* Табы внутри кабинета. */
+.tabs {
+  display: inline-flex;
+  gap: 6px;
+  background: #fbf9f4;
+  border: 1px solid #d8d2c2;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.tabs.primary .tab {
+  background: transparent;
+  color: #6f6a5e;
+  border: none;
+  padding: 6px 12px;
+}
+
+.tabs.primary .tab.is-active {
+  background: #fff;
+  color: #2f6f3e;
+  border: 1px solid #d8d2c2;
+}
+
+/* Таблица записей. */
+table.bookings {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+table.bookings th,
+table.bookings td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e3ddcf;
+}
+
+table.bookings th {
+  font-weight: 600;
+  color: #6f6a5e;
+}
+
+table.bookings tr.is-cancelled {
+  opacity: 0.65;
+}
