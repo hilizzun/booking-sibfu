@@ -12,6 +12,8 @@ build/
 # База данных SQLite
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 *.sqlite
 
 # Тесты
