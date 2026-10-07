@@ -49,9 +49,11 @@ export default defineConfig({
       // в shell на Windows. cwd принудительно ставим в корень проекта,
       // потому что Playwright ставит его в директорию конфига.
       cwd: join(here, '..'),
-      // cmd /c экранирует пути с пробелами. Без него Playwright под Windows
-      // передаёт путь без кавычек и Node не находит скрипт.
-      command: `cmd /c node "${join(here, 'start-e2e.js')}"`,
+      // Абсолютный путь к Node-обёртке. Playwright на любой ОС запускает
+      // `command` через свой shell: на Linux это /bin/sh -c, на Windows
+      // cmd /c — без обёртки cmd /c ломается только ручной запуск из
+      // PowerShell, который здесь не используется.
+      command: `node ${JSON.stringify(join(here, 'start-e2e.js'))}`,
       env: {
         PORT: String(PORT),
         HOST: '127.0.0.1',
