@@ -53,10 +53,6 @@ jobs:
     name: Сквозные тесты
     runs-on: ubuntu-latest
     needs: check
-    # Сквозные тесты сейчас нестабильны в CI и доводятся отдельно.
-    # Не блокируем остальные задачи: падение e2e отмечается как x, но
-    # итог CI определяется задачами check и docker.
-    continue-on-error: true
 
     steps:
       - name: Забрать код
